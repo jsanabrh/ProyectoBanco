@@ -1,48 +1,42 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Bank } from '../entities/bank.entitie';
+import { Model } from 'mongoose';
+import { BankDto } from '../DTOs/common/bank.dto';
 
 @Injectable()
 export class TransferService {
-  private transfers: any[] = []; // Simulated in-memory database
-
-  findAll(): any[] {
-    return this.transfers;
+  constructor(@InjectModel(Bank.name) protected bankModel: Model<Bank>) {} // Simulated in-memory database
+  async findAll() {
+    return this.bankModel.find();
   }
 
-  findOne(id: number): any {
-    const transfer = this.transfers.find((t) => t.id === id);
+  async findOne(id: string): Promise<BankDto> {
+    const transfer = await this.bankModel.findOne({ id });
     if (!transfer) {
       throw new NotFoundException(`Transfer with ID ${id} not found`);
     }
     return transfer;
   }
 
-  create(transfer: any): any {
-    const newTransfer = { id: this.generateId(), ...transfer };
-    this.transfers.push(newTransfer);
-    return newTransfer;
+  async create(createBankDto: BankDto): Promise<Bank> {
+    const newTransfer = new this.bankModel(createBankDto);
+    return newTransfer.save();
   }
 
-  update(id: number, transfer: any): any {
-    const index = this.transfers.findIndex((t) => t.id === id);
-    if (index === -1) {
-      throw new NotFoundException(`Transfer with ID ${id} not found`);
-    }
-    this.transfers[index] = { ...this.transfers[index], ...transfer };
-    return this.transfers[index];
+  async update(id: string, updateBankDto: BankDto): Promise<Bank> {
+    return this.bankModel
+      .findOneAndUpdate({ transferId: id }, updateBankDto, { new: true })
+      .exec();
   }
 
-  remove(id: number): any {
-    const index = this.transfers.findIndex((t) => t.id === id);
-    if (index === -1) {
-      throw new NotFoundException(`Transfer with ID ${id} not found`);
-    }
-    const deletedTransfer = this.transfers.splice(index, 1);
-    return deletedTransfer[0];
+  async remove(id: string): Promise<Bank> {
+    return this.bankModel.findOneAndDelete({ transferId: id }).exec();
   }
 
   private generateId(): number {
-    return this.transfers.length > 0
-      ? Math.max(...this.transfers.map((t) => t.id)) + 1
+    return this.bankModel.length > 0
+      ? Math.max(...this.bankModel.map((t) => t.id)) + 1
       : 1;
   }
 }
