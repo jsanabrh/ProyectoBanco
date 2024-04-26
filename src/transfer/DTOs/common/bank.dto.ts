@@ -6,10 +6,7 @@ import {
 } from '@nestjs/class-validator';
 
 export class BankDto {
-  @IsNotEmpty()
-  @IsString()
-  transferId: string;
-
+ 
   @IsNotEmpty()
   @IsString()
   senderUser: string;
