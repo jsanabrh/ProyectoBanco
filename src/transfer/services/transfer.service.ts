@@ -42,8 +42,8 @@ export class TransferService {
   async generateId() {
       const registers = await this.bankModel.find()
       let id
-       registers.forEach(register =>{
-          id = register.transferId + 1
+       registers.forEach(registerTransfer =>{
+          id = registerTransfer.transferId + 1
           console.log(id);
           
       })
